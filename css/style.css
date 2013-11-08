@@ -1,11 +1,18 @@
 
-.grid-buster {}
+
+#grid-buster-demo {
+	margin: auto;
+}
+
+.grid-buster * {
+	box-sizing: border-box;
+}
+
 
 .grid-buster .block-container {
-	border: 1px solid black;
-	border-width: 1px 0 0 1px;
+	border: 1px solid #999;
 	display: inline-block;
-	margin-bottom: 10px;
+	background: #eee;
 }
 
 .grid-buster .game-score:before {
@@ -18,13 +25,12 @@
 
 .grid-buster .block {
 	float:left;
-	width:40px;
-	height:40px;
+	width:80px;
+	height:80px;
 	border:1px solid black;
-	border-width: 0 1px 1px 0;
-	background:#fff;
 	text-align: center;
-	line-height: 40px;
+	line-height: 80px;
+	margin: 2px;
 
     -webkit-transition: all 1s linear;
     -o-transition: all 1s linear;
@@ -38,6 +44,11 @@
 .grid-buster .block.block-selection {
     box-shadow: inset 0 0 10px #fff;
     transition: all  200ms linear;
+}
+
+.grid-buster .block[data-type*=null] {
+	background: none;
+	border-color: transparent;
 }
 
 .grid-buster .block[data-type*=red] {

@@ -43,8 +43,6 @@ var GridBuster = (function (){
 		Selection.prototype.isValid = function isValid(x, y) {
 			var key = _getKey(x, y);
 
-			console.log(x, y, this.checked.indexOf(key) === -1, this.gameInstance.getType(x, y), this.type)
-
 			return x !== null && y !== null 
 					&& this.checked.indexOf(key) === -1 
 					&& this.gameInstance.getType(x, y) === this.type;
@@ -113,13 +111,19 @@ var GridBuster = (function (){
 
 		this.height = options.height || 8;
 		this.width = options.width || 8;
-		this.numberOfBlockTypes = Math.max(4, options.numberOfBlockTypes || 0);
+		this.numberOfBlockTypes = Math.max(2, options.numberOfBlockTypes || 0);
 		this.blockTypes = BLOCK_TYPES.slice(0, this.numberOfBlockTypes);
 
 		this.elements.gridContainer.delegate(".block", "click", function handleBlockClick (event) { 
 			
-			var block = $(event.target);
-			this.blockClick(block.data("x"), block.data("y"), block.data("type"));
+			var block = $(event.target), 
+				x = block.data("x"),
+				y = block.data("y"),
+				type = this.getType(x, y);
+
+			if(type) {
+				this.blockClick(block.data("x"), block.data("y"), type);
+			}
 
 			this.render();
 
@@ -129,8 +133,11 @@ var GridBuster = (function (){
 			
 			if(event.type == "mouseenter") {
 
-				var block = $(event.target),
-					selection = new Selection(this, block.data("x"), block.data("y")),
+				var block = $(event.target), 
+					x = block.data("x"),
+					y = block.data("y"),
+					type = this.getType(x, y),
+					selection = type ? new Selection(this, block.data("x"), block.data("y")) : [],
 					sLen = selection.length
 					selector = "";
 

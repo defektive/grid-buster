@@ -1,0 +1,65 @@
+
+.grid-buster {}
+
+.grid-buster .block-container {
+	border: 1px solid black;
+	border-width: 1px 0 0 1px;
+	display: inline-block;
+	margin-bottom: 10px;
+}
+
+.grid-buster .game-score:before {
+	content: "Score: ";
+}
+
+.grid-buster .game-score:after {
+	content: " pts";
+}
+
+.grid-buster .block {
+	float:left;
+	width:40px;
+	height:40px;
+	border:1px solid black;
+	border-width: 0 1px 1px 0;
+	background:#fff;
+	text-align: center;
+	line-height: 40px;
+
+    -webkit-transition: all 1s linear;
+    -o-transition: all 1s linear;
+    -moz-transition: all 1s linear;
+    -ms-transition: all 1s linear;
+    -kthtml-transition: all 1s linear;
+    transition: all 1s linear;
+
+}
+
+.grid-buster .block.block-selection {
+    box-shadow: inset 0 0 10px #fff;
+    transition: all  200ms linear;
+}
+
+.grid-buster .block[data-type*=red] {
+	background: red;
+}
+
+.grid-buster .block[data-type*=blue] {
+	background: blue;
+}
+
+.grid-buster .block[data-type*=green] {
+	background: green;
+}
+
+.grid-buster .block[data-type*=orange] {
+	background: orange;
+}
+
+.grid-buster .block[data-type*=purple] {
+	background: purple;
+}
+
+.grid-buster .block[data-type*=yellow] {
+	background: yellow;
+}

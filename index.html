@@ -3,6 +3,7 @@
 <html>
 <head>
 	<script type="text/javascript" src="js/lib/jquery-1.10.1.min.js"></script>
+	<script type="text/javascript" src="js/Style.js"></script>
 	<script type="text/javascript" src="js/GridBuster.js"></script>
 	<link rel="stylesheet" href="css/style.css" />
 <body>
@@ -11,7 +12,6 @@
 
 <script type="text/javascript">
 (function (){
-
 
 	var blockWidth = 86,
 		win = $(window),
@@ -24,7 +24,7 @@
 		element: $("#grid-buster-demo"),
 		height: blocksHigh,
 		width: blocksWide,
-		numberOfBlockTypes: 1
+		startLevel: 3
 	});
 
 })();

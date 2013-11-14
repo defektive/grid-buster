@@ -1,0 +1,31 @@
+{
+  "name": "grid-buster",
+  "version": "0.0.2",
+  "description": "A bejeweled like game for learning",
+  "main": "server.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "dependencies": {
+    "connect": "~2.11.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/bh0/grid-buster.git"
+  },
+  "keywords": [
+    "javascript",
+    "game",
+    "bejeweled"
+  ],
+  "author": "Brad Horrocks",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/bh0/grid-buster/issues"
+  }
+}

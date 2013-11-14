@@ -1,100 +1,46 @@
 var GridBuster = (function (){
 
-	var BLOCK_TYPES = ["red", "blue", "green", "orange", "purple", "yellow"];
 
-	var Selection = (function (){
 
-		function _getKey(){
-			return Array.prototype.join.apply(arguments, [","]);
+	function _handleBlockClick (event) {
+		var block = event.target._block;
+		this.blockClick(block);
+	}
+
+	function _handleBlockMouseEnter (event) {
+		var block = event.target._block,
+			type = block.getType(),
+			selection = type ? new Selection(this.grid, block) : [],
+			sLen = selection.length,
+			selector = "";
+
+		while(sLen--) {
+			var coords = selection[sLen].getCoords();
+
+			selector += selector.length ? "," : "";
+			selector += "[data-x=" + coords .x +"][data-y=" + coords.y + "]";
 		}
 
-		function Selection(gameInstance, x, y){
+		$(selector).addClass("block-selection");
+	}
 
-			this.checked = [];
-			this.added = [];
+	function _handleBlockMouseLeave (event) {
+		$(".block-selection").removeClass("block-selection");
+	}
 
-			this.gameInstance = gameInstance;
-			this.type = this.gameInstance.getType(x, y);
-
-			this.concat(this.getSelection(x, y));
-		}
-
-		Selection.prototype = Object.create(Array.prototype);
-
-		Selection.prototype.highlight = function(){
-			var len = this.length;
-
-
-			while(len--){
-				$("[data-x="+ this[len].x +"][data-y="+ this[len].y +"]").addClass("block-selection");
-			}
-
-		},
-
-		Selection.prototype.push = function push(x, y) {
-			var key = Array.prototype.join.apply(arguments, [","]);
-
-			if(this.added.indexOf(key) === -1) {
-				this.added.push(key);
-				Array.prototype.push.apply(this, [{x: x, y: y}]);		
-			}
-		}
-
-		Selection.prototype.isValid = function isValid(x, y) {
-			var key = _getKey(x, y);
-
-			return x !== null && y !== null 
-					&& this.checked.indexOf(key) === -1 
-					&& this.gameInstance.getType(x, y) === this.type;
-		}
-
-
-		Selection.prototype.concat = function concat(items) {
-			// kind of hackey but enforces uniqueness
-			var iLen = items.length;
-
-			while(iLen--) {
-				this.push(items[iLen].x, items[iLen].y);
-			}
-		}
-
-		Selection.prototype.checkCoord = function checkCoord(x, y, newSelection){
-			if (this.isValid(x, y)) {
-				newSelection.push({x: x, y:y});
-			}
-			this.checked.push(_getKey(x, y));
-		}
-
-		Selection.prototype.getSelection = function getSelection(x, y) {
-
-			var bX = x > 0 ? x -1 : null,
-				fX = x < this.gameInstance.width ? x + 1 : null,
-				uY = y > 0 ? y -1 : null,
-				dY = y < this.gameInstance.height ? y + 1: null,
-				newSelection = [];
-
-			this.checked.push(_getKey(x, y));
-
-			this.checkCoord(bX, y, newSelection);
-			this.checkCoord(fX, y, newSelection);
-			this.checkCoord(x, uY, newSelection);
-			this.checkCoord(x, dY, newSelection);
-
-			var kLen = newSelection.length,
-				others = [];
-
-			while(kLen--){
-				others = others.concat(this.getSelection(newSelection[kLen].x, newSelection[kLen].y));
-			}
-
-			newSelection.push({x: x, y: y});
-			return newSelection.concat(others);
-		}
-
-		return Selection;
-	})();
-
-
+	/**
+	 * GridBuster Constructor
+	 * Options:
+	 *  height:
+	 * @Class GridBuster
+	 * @classdesc Core GridBuster Class this is the main parent class. Its main function is keeping score and setting up other classes
+	 * @param {{height: number, width: number, numberOfBlockTypes: number, element: HTMLElement}} options Valid Options are:
+	 *      height,
+	 *      width,
+	 *      startLevel,
+	 *      element
+	 * @constructor
+	 */
 	function GridBuster(options) {
 		options = options || {};
 
@@ -102,154 +48,367 @@ var GridBuster = (function (){
 		this.element.addClass("grid-buster");
 
 		this.elements = {
-			gridContainer: $("<div class='block-container'>"),
+			gridContainer: $("<div>"),
 			score: $("<div class='game-score'>"),
-		}
+			nextLevel: $("<button>Next Level</button>"),
+			restart: $("<button>Restart</button>"),
+		};
 
 		this.element.append(this.elements.score);
+		this.element.append(this.elements.restart);
+		this.element.append(this.elements.nextLevel);
 		this.element.append(this.elements.gridContainer);
 
-		this.height = options.height || 8;
-		this.width = options.width || 8;
-		this.numberOfBlockTypes = Math.max(2, options.numberOfBlockTypes || 0);
-		this.blockTypes = BLOCK_TYPES.slice(0, this.numberOfBlockTypes);
 
-		this.elements.gridContainer.delegate(".block", "click", function handleBlockClick (event) { 
-			
-			var block = $(event.target), 
-				x = block.data("x"),
-				y = block.data("y"),
-				type = this.getType(x, y);
+		this.element.delegate(".block", "click", _handleBlockClick.bind(this));
+		this.element.delegate(".block", "mouseenter", _handleBlockMouseEnter.bind(this));
+		this.element.delegate(".block", "mouseleave", _handleBlockMouseLeave.bind(this));
 
-			if(type) {
-				this.blockClick(block.data("x"), block.data("y"), type);
-			}
+		var levelOffset = 2;
+		this.level = options.startLevel || 1;
 
-			this.render();
+		this.grid = new Grid({
+			element: this.elements.gridContainer,
+			height: options.height,
+			width: options.width,
+			numberOfBlockTypes: (levelOffset + this.level)
+		});
 
+		this.elements.restart.click(function (){
+			this.resetGame();
 		}.bind(this));
 
-		this.elements.gridContainer.delegate(".block", "mouseenter", function handleBlockMouseEnter (event) { 
-			
-			if(event.type == "mouseenter") {
-
-				var block = $(event.target), 
-					x = block.data("x"),
-					y = block.data("y"),
-					type = this.getType(x, y),
-					selection = type ? new Selection(this, block.data("x"), block.data("y")) : [],
-					sLen = selection.length
-					selector = "";
-
-				while(sLen--) {
-					selector += selector.length ? "," : "";
-					selector += "[data-x=" +selection[sLen].x +"][data-y=" + selection[sLen].y + "]";
-				}
-
-				$(selector).addClass("block-selection");
-			}
-
-		}.bind(this));
-
-		this.elements.gridContainer.delegate(".block", "mouseleave", function handleBlockMouseEnter (event) { 
-			$(".block-selection").removeClass("block-selection");
-		}.bind(this));
-
-		this.blocks = [];
 		this.score = 0;
 		this.resetGame();
 	}
 
 	GridBuster.prototype.resetGame = function resetGame(){
-		this.blocks = [];
 		this.score = 0;
-
-		var y = this.height;
-
-		while(y--){
-			var tmp = [],
-				x = this.width;
-			while(x--) {
-				tmp.unshift(this.blockTypes[Math.floor(Math.random()*this.blockTypes.length)]);
-			}
-			this.blocks.unshift(tmp);
-		}
-
-		this.render();
+		this.updateUI();
 	}
 
-	GridBuster.prototype.render = function render(){
-		this.elements.gridContainer.empty();
+	GridBuster.prototype.updateUI = function updateUI(){
 		this.elements.score.html(this.score);
-
-		var y = this.height;
-
-		while(y--) {
-			var x = this.width;
-			this.elements.gridContainer.prepend('<div style="clear:left;"><div/>');
-			while(x--) {
-				this.elements.gridContainer.prepend(
-					'<div class="block" data-x="'+x+'" data-y="'+y+'" data-type="'+ this.blocks[y][x] +'"></div>'
-				);
-			}
-
-		}
 	}
 
-	GridBuster.prototype.setType = function setType(x, y, type) {
-		this.blocks[y][x] = type || null;
-	}
+	GridBuster.prototype.blockClick = function blockClick(block) {
 
-	GridBuster.prototype.getType = function getType(x, y) {
-		return this.blocks[y] && this.blocks[y][x] || null;
-	}
-
-	GridBuster.prototype.blockClick = function blockClick(x, y, type) {
-
-		var selection = new Selection(this, x, y),
+		var selection = new Selection(this.grid, block),
+			selectionScore = 0,
+			special = 0,
 			sLen = selection.length,
-			minx = this.width - 1,
-			maxx = this.width -1;
+			minx = this.grid.width - 1,
+			maxx = this.grid.width - 1;
 
 		if(selection.length === 1) {
 			return;
 		}
 
 		while(sLen--){
-			this.score += selection.length - sLen;
+			selectionScore += selection.length - sLen;
 
-			var c = selection[sLen];
-			minx = Math.min(minx, c.x);
-			maxx = Math.max(maxx, c.x);
-			this.setType(c.x, c.y, null);
+			var selectedBlock = selection[sLen],
+				selectedCoors = selectedBlock.getCoords();
+
+			minx = Math.min(minx, selectedCoors.x);
+			maxx = Math.max(maxx, selectedCoors.x);
+
+			if(selectedBlock.isSpecial()) {
+				special++;
+			}
+
+			selectedBlock.remove();
 		}
 
-		this.updateBlockTypes(minx, maxx);
+		if(special) {
+			selectionScore = selectionScore * (3 * special);
+		}
+
+		this.score += selectionScore;
+
+		this.updateUI();
+		this.updateGrid(minx, maxx);
 	}
 
-	GridBuster.prototype.updateBlockTypes = function (minx, maxx){
+	GridBuster.prototype.updateGrid = function (minx, maxx){
 		maxx += 1;
 		while(maxx-- > minx) {
-			var y = this.height;
-			while(y--){
-				if(this.getType(maxx, y) === null) {
-					this.setType(maxx, y, this.updateBlockTypeAbove(maxx, y));
+			this.updateColumn(maxx);
+		}
+	}
+
+	GridBuster.prototype.updateColumn = function (x){
+		var y = this.grid.height;
+
+		while(y--) {
+			var tmpBlock = this.grid.getBlock(x, y);
+			if(tmpBlock === null) {
+				var newBlock = this.getBlockAbove(x, y);
+				if(newBlock) {
+					newBlock.setCoords(x, y);
 				}
 			}
 		}
 	}
 
-	GridBuster.prototype.updateBlockTypeAbove = function (x, y){
-		var type = null;
-		while(y--){
-			type = this.getType(x, y);
-			if(type !== null) {
-				this.setType(x, y, null);
-				break;
+	GridBuster.prototype.getBlockAbove = function (x, y){
+		while(y--) {
+			var tmpBlock = this.grid.getBlock(x, y);
+			if(tmpBlock !== null) {
+				return tmpBlock;
 			}
 		}
-		return type;
+
+		return null;
 	}
+
+	var Grid = GridBuster.Grid = (function (){
+
+		function Grid(options) {
+			options = options || {};
+
+			this.element = options.element || $("<div>");
+			this.element.addClass("block-container");
+
+			this.height = options.height || 8;
+			this.width = options.width || 8;
+			this.numberOfBlockTypes = options.numberOfBlockTypes || 3;
+			this.blockTypes = BLOCK_TYPES.slice(0, this.numberOfBlockTypes);
+
+			var y = this.height,
+			stylesheet = new Stylesheet();
+
+			while(y--){
+				var x = this.width;
+				while(x--){
+					var selector = "[data-x='"+ x +"'][data-y='" + y + "']",
+						rule = "{ "
+						+"left: "+ (x * 82) +"px;"
+						+"top: "+ (y * 82) +"px;"
+						+"}";
+
+					stylesheet.insertRule(selector + rule);
+				}
+			}
+
+
+			this.setup();
+		}
+
+		Grid.prototype.setup = function setup(){
+
+			var total = this.height * this.width,
+				blocks = [];
+			while(total--) {
+				var block = new Block(this.blockTypes[Math.floor(Math.random() * this.blockTypes.length)], Math.random() * 10 > 7);
+				this.element.append(block.element);
+				blocks.push(block);
+			}
+
+
+			var y = this.height;
+			while(y--) {
+				var x = this.width;
+				while(x--) {
+					var block = blocks.shift();
+
+					$(block.element).attr("data-x", x);
+					$(block.element).attr("data-y", y);
+				}
+			}
+
+			// this.render();
+		}
+
+		Grid.prototype.getBlock = function getBlock(x, y) {
+			var el = this.element.find("[data-x="+ x +"][data-y="+ y +"]");
+			if(el.length) {
+				return el[0]._block;
+			}
+
+			return null;
+		}
+
+
+		return Grid;
+	})();
+
+
+	/**
+	 *
+	 * @type {Array}
+	 */
+	var BLOCK_TYPES = GridBuster.BLOCK_TYPES = ["red", "blue", "green", "pink", "orange", "purple", "yellow"];
+
+	var Selection = GridBuster.Selection = (function (){
+
+		function _getKey(){
+			return Array.prototype.join.apply(arguments, [","]);
+		}
+
+		/**
+		 *
+		 * @param gameInstance
+		 * @param x
+		 * @param y
+		 * @constructor
+		 */
+		function Selection(gridInstance, block){
+
+			this.checked = [];
+			this.added = [];
+			this.gridInstance = gridInstance;
+
+			this.block = block;
+			this.type = block.getType();
+
+			this.concat(this.getSelection(this.block));
+		}
+
+		Selection.prototype = Object.create(Array.prototype);
+
+		Selection.prototype.highlight = function(){
+			var len = this.length;
+			while(len--){
+				this[len].highlight();
+			}
+		},
+
+		Selection.prototype.push = function push(block) {
+			var coords = block.getCoords(),
+				key = _getKey(coords.x, coords.y);
+
+			if(this.added.indexOf(key) === -1) {
+				this.added.push(key);
+				Array.prototype.push.apply(this, [block]);
+			}
+		}
+
+		Selection.prototype.concat = function concat(items) {
+			// kind of hackey but enforces uniqueness
+			var iLen = items.length;
+
+			while(iLen--) {
+				this.push(items[iLen]);
+			}
+		}
+
+		Selection.prototype.getSelection = function getSelection(block) {
+
+			var blockCoords = block.getCoords(),
+				x = blockCoords.x,
+				y = blockCoords.y,
+
+				adjacentCoords = {
+					before: {
+						x: x > 0 ? x -1 : null,
+						y: y
+					},
+
+					after: {
+						x: x < this.gridInstance.width ? x + 1 : null,
+						y: y
+					},
+
+					above: {
+						x: x,
+						y: y > 0 ? y -1 : null
+					},
+
+					below: {
+						x: x,
+						y: y < this.gridInstance.height ? y + 1: null
+					}
+				},
+				newSelection = [];
+
+			this.checked.push(_getKey(x, y));
+
+			var coordKeys = Object.keys(adjacentCoords),
+				kLen = coordKeys.length;
+
+			while(kLen--) {
+				var tmpCoord = adjacentCoords[coordKeys[kLen]],
+					key = _getKey(tmpCoord.x, tmpCoord.y),
+					tmpBlock = this.gridInstance.getBlock(tmpCoord.x, tmpCoord.y);
+
+				if(tmpCoord.x === null || tmpCoord.y === null || tmpBlock === null) {
+					continue;
+				}
+
+				var type = tmpBlock.getType();
+				if (this.checked.indexOf(key) === -1 && type && type == this.type) {
+					newSelection.push(tmpBlock);
+				}
+				this.checked.push(_getKey(tmpCoord.x, tmpCoord.y));
+			}
+
+			var sLen = newSelection.length,
+				others = [];
+
+			while(sLen--){
+				others = others.concat(this.getSelection(newSelection[sLen]));
+			}
+
+			newSelection.push(block);
+			return newSelection.concat(others);
+		}
+
+		return Selection;
+	})();
+
+
+	/**
+	 *
+	 * @param type
+	 * @param special
+	 * @constructor
+	 */
+	var Block = GridBuster.Block = (function (){
+
+		function Block(type, special) {
+			this.type = type;
+			this.special = special;
+			this.element = $("<div class='block' data-type='" + this.type + "' data-special='" + this.special.toString() + "'></div>");
+			this.element[0]._block = this;
+		}
+
+		Block.prototype.getType = function (){
+			return this.type;
+		}
+
+		Block.prototype.setType = function (type){
+			this.type = type;
+		}
+
+		Block.prototype.isSpecial = function (){
+			return this.special === true;
+		}
+
+		Block.prototype.getCoords = function (){
+			return {
+				x: parseInt(this.element.attr("data-x"), 10),
+				y: parseInt(this.element.attr("data-y"), 10)
+			}
+		}
+
+		Block.prototype.setCoords = function (x, y){
+			this.element.attr("data-x", x);
+			this.element.attr("data-y", y);
+		}
+
+		Block.prototype.remove = function (){
+			this.element.remove();
+			delete this.element._block;
+			delete this.element;
+		}
+
+		Block.prototype.highlight = function (){
+			this.element.addClass("block-selection")();
+		}
+
+		return Block;
+	})();
 
 	return GridBuster;
 })();

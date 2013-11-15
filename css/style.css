@@ -1,36 +1,33 @@
 
-@media all and (max-width: 599px){
-	body {
-		width: 599px;
-	}
-}
-@media all and (min-width: 600px) and (max-width:799px){
-	body {
-		width: 799px;
-	}
-}
-
 #grid-buster-demo {
-	margin: auto;
+	margin: 90px auto;
 }
 
 .grid-buster * {
 	box-sizing: border-box;
 }
 
-
 .grid-buster .block-container {
 	background: #eee;
 	position: relative;
 }
 
-.grid-buster .game-score:before {
-	content: "Score: ";
-}
+.grid-buster .game-score {
 
-.grid-buster .game-score:after {
-	content: " pts";
+	position: relative;
+	top: -77px;
+	left: 88px;
+	width: 60px;
+	z-index: 21;
+	text-align: center;
 }
+/*.grid-buster .game-score:before {*/
+	/*content: "Score: ";*/
+/*}*/
+
+/*.grid-buster .game-score:after {*/
+	/*content: " pts";*/
+/*}*/
 
 .grid-buster .block {
 	border:1px solid #222;
@@ -38,13 +35,79 @@
 	line-height: 80px;
 	position: absolute;
 	box-shadow: inset 0 0 4px #333;
-    transition: all 300ms linear;
-
+	transition: all 300ms linear;
 }
 
 .grid-buster .block.block-selection {
-    box-shadow: inset 0 0 20px #fff;
+	box-shadow: inset 0 0 20px #fff;
 }
+
+.grid-buster .block.removed {
+	-webkit-transform:  rotateX( 720deg );
+	transition: all 500ms cubic-bezier(.6,.2,1,1);
+	bottom: 20px;
+	left: 50%;
+	margin-left: -15px;
+	top: -55px;
+	height: 30px;
+	width: 30px;
+	opacity: .0;
+	z-index: 18;
+	background: #333;
+}
+
+.grid-buster .ufo {
+	width: 250px;
+	height: 188px;
+	position: fixed;
+	top: -50px;
+	z-index: 20;
+	left: 50%;
+	margin-left: -125px;
+	transition: all 500ms ease-in;
+}
+
+.grid-buster .ufo-ship {
+	position: relative;
+	width: 250px;
+	z-index: 20;
+	height: 188px;
+	background: url(flying-saucer3.png);
+}
+
+.grid-buster .ufo-ray {
+	height: 0px;
+	top: -40px;
+	position: relative;
+	left: 50%;
+	width: 20px;
+	margin-left: -15px;
+	background: green;
+	z-index: 19;
+	-webkit-transform: perspective(30px) rotateX(45deg);
+	-webkit-transform-origin: 50% 0%;
+
+	transition: all 250ms ease-out;
+
+	background: linear-gradient(to bottom, rgba(13,201,0,1) 0%,rgba(3,154,0,0) 8%,rgba(0,138,0,0) 30%);
+}
+
+.grid-buster .ufo.abducting .ufo-ray {
+	height: 1000px;
+}
+
+.grid-buster .ufo.hover {
+	top: -70px;
+}
+
+.grid-buster .ufo.left{
+	-webkit-transform: rotate(10deg);;
+}
+
+.grid-buster .ufo.right{
+	-webkit-transform: rotate(-10deg);
+}
+
 
 .grid-buster .block[data-type*=null] {
 	background: none;

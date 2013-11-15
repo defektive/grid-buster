@@ -1,5 +1,7 @@
 var GridBuster = (function (){
 
+	window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+		window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
 
 
 	function _handleBlockClick (event) {
@@ -50,22 +52,29 @@ var GridBuster = (function (){
 
 		this.elements = {
 			gridContainer: $("<div>"),
-			score: $("<div class='game-score'>"),
+			score: $("<div class='game-score'>0</div>"),
 			nextLevel: $("<button>Next Level</button>"),
 			fillGrid: $("<button>Fill Grid</button>"),
+			ufo: $("<div class='ufo'><div class='ufo-ship'></div></div>"),
+			ufoRay: $("<div class='ufo-ray'></div>"),
 			restart: $("<button>Restart</button>")
 		};
 
-		this.element.append(this.elements.score);
+		this.lastTimestamp = 0;
+
+		this.element.append(this.elements.ufo);
+		this.elements.ufo.append(this.elements.score);
+		this.elements.ufo.append(this.elements.ufoRay);
 		this.element.append(this.elements.restart);
 		this.element.append(this.elements.nextLevel);
 		this.element.append(this.elements.fillGrid);
 		this.element.append(this.elements.gridContainer);
 
-
 		this.element.delegate(".block", "click", _handleBlockClick.bind(this));
 		this.element.delegate(".block", "mouseenter", _handleBlockMouseEnter.bind(this));
 		this.element.delegate(".block", "mouseleave", _handleBlockMouseLeave.bind(this));
+
+		requestAnimationFrame(GridBuster.prototype.flyUfo.bind(this));
 
 		this.level = options.startLevel || 1;
 
@@ -89,9 +98,21 @@ var GridBuster = (function (){
 
 		this.elements.nextLevel.click(GridBuster.prototype.nextLevel.bind(this));
 
+
+		this.soundMan = new SoundManager({
+			abduct: "/sound/abduct.mp3",
+			abduct2: "/sound/abduct2.mp3"
+		});
+
 		this.resetGame();
 	}
 
+	/**
+	 * Progress game to the next level
+	 *
+	 * @method GridBuster#nextLevel
+	 * @void
+	 */
 	GridBuster.prototype.nextLevel = function nextLevel(){
 		this.level++;
 		var numberOfBlocks = LEVEL_OFFSET + this.level;
@@ -102,17 +123,76 @@ var GridBuster = (function (){
 		this.grid.fillEmptyBlocks();
 	}
 
+
+
+	/**
+	 * fly the ufo
+	 *
+	 * @method GridBuster#flyUfo
+	 * @void
+	 */
+	GridBuster.prototype.flyUfo = function flyUfo(timestamp){
+
+		if(timestamp - this.lastTimestamp > 500) {
+			var ufo = this.elements.ufo,
+				left = ufo.hasClass("left"),
+				right = ufo.hasClass("right");
+
+			ufo.toggleClass("hover");
+			ufo.removeClass("right");
+			ufo.removeClass("left");
+
+			if(Math.random() * 10 > 5) {
+
+				if(!right) {
+					if (Math.random() * 10 > 3) {
+						ufo.addClass("right");
+					}
+				} else if(!left) {
+					if (Math.random() * 10 > 3) {
+						ufo.addClass("left");
+					}
+				}
+			}
+
+			this.lastTimestamp = timestamp;
+		}
+
+		requestAnimationFrame(GridBuster.prototype.flyUfo.bind(this));
+	}
+
+
+	/**
+	 * Reset the game
+	 *
+	 * @method GridBuster#resetGame
+	 * @void
+	 */
 	GridBuster.prototype.resetGame = function resetGame(){
 		this.score = 0;
 		this.level = 1;
+
+		this.grid.setNumberOfBlocks(LEVEL_OFFSET + this.level);
 		this.grid.setup();
 		this.updateUI();
 	}
 
+	/**
+	 * Updates the UI, right now its just the score
+	 * @method GridBuster#updateUI
+	 * @void
+	 */
 	GridBuster.prototype.updateUI = function updateUI(){
-		this.elements.score.html(this.score);
+		this.elements.score.html( this.score);
 	}
 
+	/**
+	 * Block click handlers
+	 *
+	 * @method GridBuster#blockClick
+	 * @param {Block}
+	 * @void
+	 */
 	GridBuster.prototype.blockClick = function blockClick(block) {
 
 		var selection = new Selection(this.grid, block),
@@ -125,6 +205,43 @@ var GridBuster = (function (){
 		if(selection.length === 1) {
 			return;
 		}
+
+
+		var centerBlock = (block.element.width() /2),
+			blockOffset =  block.element.offset(),
+			blockX = blockOffset.left + centerBlock,
+			blockY = blockOffset.top + centerBlock,
+
+			ufoX = Math.floor(this.element.width() / 2),
+			ufoY = this.element.offset().top,
+
+			calcX = blockX - ufoX,
+			calcY = blockY - ufoY,
+
+			theta = Math.atan2(calcY, calcX);
+
+
+		var deg = (theta * 180 / Math.PI) - 90,
+			perspective = Math.min(30);
+
+
+
+		if(perspective < 0) {
+			perspective *= -1;
+		}
+
+		this.elements.ufoRay.css("-webkit-transform", "rotate("+ deg  + "deg) perspective(30px) rotateX(45deg)");
+
+
+
+		this.elements.ufo.addClass("abducting");
+		this.soundMan.play("abduct2");
+
+		setTimeout(function (){
+			this.elements.ufo.removeClass("abducting");
+			this.soundMan.pause("abduct2");
+		}.bind(this), 750);
+
 
 		while(sLen--){
 			selectionScore += selection.length - sLen;
@@ -152,6 +269,15 @@ var GridBuster = (function (){
 		this.updateGrid(minx, maxx);
 	}
 
+	/**
+	 * Update grid after change. This handles moving blocks down
+	 * and columns to the center. Also this is where the level progresses... for now
+	 *
+	 * @method GridBuster#updateGrid
+	 * @param {number} minx
+	 * @param {number} maxx
+	 * @void
+	 */
 	GridBuster.prototype.updateGrid = function (minx, maxx){
 		maxx += 1;
 		while(maxx-- > minx) {
@@ -192,6 +318,12 @@ var GridBuster = (function (){
 		}
 	}
 
+	/**
+	 * Update all blocks in a column, this moves blocks down into empty spots
+	 *
+	 * @method GridBuster#updateColumn
+	 * @param x
+	 */
 	GridBuster.prototype.updateColumn = function (x){
 		var y = this.grid.height;
 
@@ -206,6 +338,14 @@ var GridBuster = (function (){
 		}
 	}
 
+	/**
+	 * Get block above
+	 *
+	 * @method GridBuster#getBlockAbove
+	 * @param {number} x
+	 * @param {number} y
+	 * @returns {Block|null}
+	 */
 	GridBuster.prototype.getBlockAbove = function (x, y){
 		while(y--) {
 			var tmpBlock = this.grid.getBlock(x, y);
@@ -291,14 +431,17 @@ var GridBuster = (function (){
 				blocks = [];
 
 			while(blocksToBeCreated--) {
-				var tmpBlock = new Block(this.blockTypes[Math.floor(Math.random() * this.blockTypes.length)], Math.random() * 10 > (10 - (this.numberOfBlockTypes / 3)));
+
+				var isSpecial = Math.random() * 10 > (10 - (this.numberOfBlockTypes / 3)),
+					type = this.blockTypes[Math.floor(Math.random() * this.blockTypes.length)];
+//					type = this.blockTypes[(blocksToBeCreated ) % this.blockTypes.length];
+
+				var tmpBlock = new Block(type, isSpecial);
 				domFragment.append(tmpBlock.element);
 				blocks.push(tmpBlock);
 			}
 
-
 			this.element.append(domFragment);
-
 
 			setTimeout(function (){
 				this.placeUnplacedBlock(blocks);
@@ -461,14 +604,16 @@ var GridBuster = (function (){
 	})();
 
 
-	/**
-	 *
-	 * @param type
-	 * @param special
-	 * @constructor
-	 */
 	var Block = GridBuster.Block = (function (){
 
+		/**
+		 * Simple class to assist in keeping tracks of blocks
+		 *
+		 * @class Block
+		 * @param type
+		 * @param special
+		 * @constructor
+		 */
 		function Block(type, special) {
 			this.type = type;
 			this.special = special;
@@ -476,6 +621,10 @@ var GridBuster = (function (){
 			this.element[0]._block = this;
 		}
 
+		/**
+		 * @method Block#getType
+		 * @returns {string}
+		 */
 		Block.prototype.getType = function (){
 			return this.type;
 		}
@@ -501,9 +650,15 @@ var GridBuster = (function (){
 		}
 
 		Block.prototype.remove = function (){
-			this.element.remove();
-			delete this.element._block;
-			delete this.element;
+
+			this.element.addClass("removed");
+
+			this.element.removeAttr("data-x");
+			this.element.removeAttr("data-y");
+
+//			this.element.remove();
+//			delete this.element._block;
+//			delete this.element;
 		}
 
 		Block.prototype.highlight = function (){
@@ -512,6 +667,7 @@ var GridBuster = (function (){
 
 		return Block;
 	})();
+
 
 	return GridBuster;
 })();

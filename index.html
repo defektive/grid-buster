@@ -4,8 +4,10 @@
 <head>
 	<script type="text/javascript" src="js/lib/jquery-1.10.1.min.js"></script>
 	<script type="text/javascript" src="js/Style.js"></script>
+	<script type="text/javascript" src="js/SoundManager.js"></script>
 	<script type="text/javascript" src="js/GridBuster.js"></script>
 	<link rel="stylesheet" href="css/style.css" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
 <body>
 
 <div id="grid-buster-demo"></div>
@@ -13,16 +15,17 @@
 <script type="text/javascript">
 (function (){
 
-	var win = $(window),
-		width = win.width(),
+	var container = $("#grid-buster-demo"),
+		win = $(window),
+		width = container.width(),
 		height = win.height(),
 		tmpSize = Math.floor(width / 18),
 		blockSize = tmpSize < 32 ? 32 : tmpSize,
 		blocksWide = Math.floor(width / blockSize),
-		blocksHigh = Math.floor((height - 100) / blockSize); // -100 for top bar
+		blocksHigh = Math.floor((height - 60) / blockSize); // -100 for top bar
 
 	new GridBuster({
-		element: $("#grid-buster-demo"),
+		element: container,
 		height: blocksHigh,
 		width: blocksWide,
 		blockSize: blockSize,

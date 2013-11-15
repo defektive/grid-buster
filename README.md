@@ -1,21 +1,5 @@
-GridBuster
-
-	Score
-
-	Level
-
-	Grid
-		Blocks[]
-		SyncState
-
-	Block
-		type
-		element
-		special
-
-	Selection
-		getScore
-		Blocks
-
-
-
+- Move CSS to JS
+	- Allow support for dynamic block width
+	- Easier way to define new Block types
+- Make special blocks less prevalent on easier levels
+- Add more block types

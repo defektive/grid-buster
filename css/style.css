@@ -1,4 +1,14 @@
 
+@media all and (max-width: 599px){
+	body {
+		width: 599px;
+	}
+}
+@media all and (min-width: 600px) and (max-width:799px){
+	body {
+		width: 799px;
+	}
+}
 
 #grid-buster-demo {
 	margin: auto;
@@ -10,7 +20,6 @@
 
 
 .grid-buster .block-container {
-	border: 1px solid #999;
 	background: #eee;
 	position: relative;
 }
@@ -24,32 +33,17 @@
 }
 
 .grid-buster .block {
-	width:80px;
-	height:80px;
-	border:1px solid black;
+	border:1px solid #222;
 	text-align: center;
 	line-height: 80px;
-	margin: 2px;
-
-
 	position: absolute;
-
-
-
-	border-radius: 10px;
 	box-shadow: inset 0 0 4px #333;
-    -webkit-transition: all 200ms linear;
-    -o-transition: all 200ms linear;
-    -moz-transition: all 200ms linear;
-    -ms-transition: all 200ms linear;
-    -kthtml-transition: all 200ms linear;
-    transition: all 200ms linear;
+    transition: all 300ms linear;
 
 }
 
 .grid-buster .block.block-selection {
     box-shadow: inset 0 0 20px #fff;
-    transition: all  200ms linear;
 }
 
 .grid-buster .block[data-type*=null] {
@@ -58,28 +52,19 @@
 }
 
 .grid-buster .block[data-special=true]:after {
-	position: relative;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
 	content: "";
 	display: inline-block;
-	height: 32px;
-	width: 32px;
-	top:9px;
 	opacity: .5;
 	background: url(special.png) no-repeat center;
 }
 
 .grid-buster .block[data-type*=red] {
-	background: #ff0000; /* Old browsers */
-	background: -moz-radial-gradient(center, ellipse cover,  #ff0000 0%, #b50000 75%); /* FF3.6+ */
-	background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,#ff0000), color-stop(75%,#b50000)); /* Chrome,Safari4+ */
-	background: -webkit-radial-gradient(center, ellipse cover,  #ff0000 0%,#b50000 75%); /* Chrome10+,Safari5.1+ */
-	background: -o-radial-gradient(center, ellipse cover,  #ff0000 0%,#b50000 75%); /* Opera 12+ */
-	background: -ms-radial-gradient(center, ellipse cover,  #ff0000 0%,#b50000 75%); /* IE10+ */
-	background: radial-gradient(ellipse at center,  #ff0000 0%,#b50000 75%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ff0000', endColorstr='#b50000',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
-
-
-
+	background: radial-gradient(ellipse at center,  #ff0000 0%,#b50000 75%);
 }
 
 .grid-buster .block[data-type*=blue] {

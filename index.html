@@ -13,18 +13,19 @@
 <script type="text/javascript">
 (function (){
 
-	var blockWidth = 86,
+	var blockSize = 100,
 		win = $(window),
 		width = win.width(),
 		height = win.height(),
-		blocksWide = Math.floor(width / blockWidth),
-		blocksHigh = Math.floor((height - (blockWidth/2)) / blockWidth);
+		blocksWide = Math.floor(width / blockSize),
+		blocksHigh = Math.floor((height - 100) / blockSize); // -100 for top bar
 
 	new GridBuster({
 		element: $("#grid-buster-demo"),
 		height: blocksHigh,
 		width: blocksWide,
-		startLevel: 3
+		blockSize: blockSize,
+		startLevel: 1
 	});
 
 })();

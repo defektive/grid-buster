@@ -28,6 +28,7 @@ var GridBuster = (function (){
 		$(".block-selection").removeClass("block-selection");
 	}
 
+	var LEVEL_OFFSET = 2;
 	/**
 	 * GridBuster Constructor
 	 * Options:
@@ -51,7 +52,7 @@ var GridBuster = (function (){
 			gridContainer: $("<div>"),
 			score: $("<div class='game-score'>"),
 			nextLevel: $("<button>Next Level</button>"),
-			restart: $("<button>Restart</button>"),
+			restart: $("<button>Restart</button>")
 		};
 
 		this.element.append(this.elements.score);
@@ -64,26 +65,32 @@ var GridBuster = (function (){
 		this.element.delegate(".block", "mouseenter", _handleBlockMouseEnter.bind(this));
 		this.element.delegate(".block", "mouseleave", _handleBlockMouseLeave.bind(this));
 
-		var levelOffset = 2;
 		this.level = options.startLevel || 1;
 
 		this.grid = new Grid({
 			element: this.elements.gridContainer,
+			blockSize: options.blockSize || 80,
 			height: options.height,
 			width: options.width,
-			numberOfBlockTypes: (levelOffset + this.level)
+			numberOfBlockTypes: (LEVEL_OFFSET + this.level)
 		});
+
 
 		this.elements.restart.click(function (){
 			this.resetGame();
 		}.bind(this));
 
-		this.score = 0;
+		this.elements.nextLevel.click(function (){
+			this.grid.setNumberOfBlocks(LEVEL_OFFSET + this.level++);
+			this.grid.fillEmptyBlocks();
+		}.bind(this));
+
 		this.resetGame();
 	}
 
 	GridBuster.prototype.resetGame = function resetGame(){
 		this.score = 0;
+		this.grid.setup();
 		this.updateUI();
 	}
 
@@ -135,6 +142,33 @@ var GridBuster = (function (){
 		while(maxx-- > minx) {
 			this.updateColumn(maxx);
 		}
+
+		var half = Math.floor(this.grid.width/2),
+			x = half + 1,
+			y = this.grid.height - 1;
+
+		while (x--){
+			var tmpBlock = this.grid.getBlock(x, y);
+			if(tmpBlock === null) {
+				var blockBefore = this.getBlockBefore(x, y);
+				if(blockBefore) {
+					console.log(this.grid.element.find("[data-x="+ blockBefore.getCoords().x + "]"))
+					this.grid.element.find("[data-x="+ blockBefore.getCoords().x + "]").attr("data-x", x);
+				}
+			}
+		}
+
+		x = half;
+		while (x++ < this.grid.width){
+			var tmpBlock = this.grid.getBlock(x, y);
+			if(tmpBlock === null) {
+				var blockBefore = this.getBlockAfter(x, y);
+				if(blockBefore) {
+					console.log(this.grid.element.find("[data-x="+ blockBefore.getCoords().x + "]"))
+					this.grid.element.find("[data-x="+ blockBefore.getCoords().x + "]").attr("data-x", x);
+				}
+			}
+		}
 	}
 
 	GridBuster.prototype.updateColumn = function (x){
@@ -162,6 +196,28 @@ var GridBuster = (function (){
 		return null;
 	}
 
+	GridBuster.prototype.getBlockBefore = function (x, y){
+		while(x--) {
+			var tmpBlock = this.grid.getBlock(x, y);
+			if(tmpBlock !== null) {
+				return tmpBlock;
+			}
+		}
+
+		return null;
+	}
+
+	GridBuster.prototype.getBlockAfter = function (x, y){
+		while(x++ < this.grid.width) {
+			var tmpBlock = this.grid.getBlock(x, y);
+			if(tmpBlock !== null) {
+				return tmpBlock;
+			}
+		}
+
+		return null;
+	}
+
 	var Grid = GridBuster.Grid = (function (){
 
 		function Grid(options) {
@@ -171,36 +227,42 @@ var GridBuster = (function (){
 			this.element.addClass("block-container");
 
 			this.height = options.height || 8;
+			this.blockSize = options.blockSize || 80;
 			this.width = options.width || 8;
-			this.numberOfBlockTypes = options.numberOfBlockTypes || 3;
-			this.blockTypes = BLOCK_TYPES.slice(0, this.numberOfBlockTypes);
+
+			this.setNumberOfBlocks(options.numberOfBlockTypes || 3);
 
 			var y = this.height,
 			stylesheet = new Stylesheet();
+
+			stylesheet.insertRule(".block-container .block {width: "+ this.blockSize +"px; height: "+ this.blockSize +"px;}");
 
 			while(y--){
 				var x = this.width;
 				while(x--){
 					var selector = "[data-x='"+ x +"'][data-y='" + y + "']",
 						rule = "{ "
-						+"left: "+ (x * 82) +"px;"
-						+"top: "+ (y * 82) +"px;"
+						+"left: "+ (x * this.blockSize) +"px;"
+						+"top: "+ (y * this.blockSize) +"px;"
 						+"}";
 
 					stylesheet.insertRule(selector + rule);
 				}
 			}
+		}
 
-
-			this.setup();
+		Grid.prototype.setNumberOfBlocks = function setNumberOfBlocks(num) {
+			this.numberOfBlockTypes = num;
+			this.blockTypes = BLOCK_TYPES.slice(0, this.numberOfBlockTypes);
 		}
 
 		Grid.prototype.setup = function setup(){
 
+			this.element.empty();
 			var total = this.height * this.width,
 				blocks = [];
 			while(total--) {
-				var block = new Block(this.blockTypes[Math.floor(Math.random() * this.blockTypes.length)], Math.random() * 10 > 7);
+				var block = new Block(this.blockTypes[Math.floor(Math.random() * this.blockTypes.length)], Math.random() * 10 > (10 - (this.numberOfBlockTypes / 3)));
 				this.element.append(block.element);
 				blocks.push(block);
 			}
@@ -218,6 +280,25 @@ var GridBuster = (function (){
 			}
 
 			// this.render();
+		}
+
+		Grid.prototype.fillEmptyBlocks = function fillEmptyBlocks(){
+
+			var y = this.height;
+
+			while(y--) {
+				var x = this.width;
+				while(x--){
+					var block = this.getBlock(x, y);
+					if(block === null) {
+						block = new Block(this.blockTypes[Math.floor(Math.random() * this.blockTypes.length)], Math.random() * 10 > (10 - (this.numberOfBlockTypes / 3)));
+						block.setCoords(x, y);
+						this.element.append(block.element);
+					}
+				}
+			}
+
+			console.log("done")
 		}
 
 		Grid.prototype.getBlock = function getBlock(x, y) {

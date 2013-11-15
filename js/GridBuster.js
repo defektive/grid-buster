@@ -75,17 +75,25 @@ var GridBuster = (function (){
 			numberOfBlockTypes: (LEVEL_OFFSET + this.level)
 		});
 
+		this.startTime = new Date().getTime();
 
 		this.elements.restart.click(function (){
 			this.resetGame();
 		}.bind(this));
 
-		this.elements.nextLevel.click(function (){
-			this.grid.setNumberOfBlocks(LEVEL_OFFSET + this.level++);
-			this.grid.fillEmptyBlocks();
-		}.bind(this));
+		this.elements.nextLevel.click(GridBuster.prototype.nextLevel.bind(this));
 
 		this.resetGame();
+	}
+
+	GridBuster.prototype.nextLevel = function nextLevel(){
+		this.level++;
+		var numberOfBlocks = LEVEL_OFFSET + this.level;
+		if(numberOfBlocks > GridBuster.BLOCK_TYPES.length) {
+			alert("The Game is over it took you "+ (new Date().getTime() - this.startTime) / 1000 +" seconds to get "+ this.score+" points!");
+		}
+		this.grid.setNumberOfBlocks(LEVEL_OFFSET + this.level);
+		this.grid.fillEmptyBlocks();
 	}
 
 	GridBuster.prototype.resetGame = function resetGame(){
@@ -152,7 +160,6 @@ var GridBuster = (function (){
 			if(tmpBlock === null) {
 				var blockBefore = this.getBlockBefore(x, y);
 				if(blockBefore) {
-					console.log(this.grid.element.find("[data-x="+ blockBefore.getCoords().x + "]"))
 					this.grid.element.find("[data-x="+ blockBefore.getCoords().x + "]").attr("data-x", x);
 				}
 			}
@@ -164,10 +171,17 @@ var GridBuster = (function (){
 			if(tmpBlock === null) {
 				var blockBefore = this.getBlockAfter(x, y);
 				if(blockBefore) {
-					console.log(this.grid.element.find("[data-x="+ blockBefore.getCoords().x + "]"))
 					this.grid.element.find("[data-x="+ blockBefore.getCoords().x + "]").attr("data-x", x);
 				}
 			}
+		}
+
+		var activeBlocks = $("[data-x][data-y]").length,
+			totalBlocks = this.grid.height * this.grid.width,
+			ratio = activeBlocks / totalBlocks;
+
+		if(ratio < .3){
+			this.nextLevel();
 		}
 	}
 
@@ -257,48 +271,49 @@ var GridBuster = (function (){
 		}
 
 		Grid.prototype.setup = function setup(){
-
 			this.element.empty();
-			var total = this.height * this.width,
+			this.fillEmptyBlocks();
+		}
+
+		Grid.prototype.fillEmptyBlocks = function fillEmptyBlocks(){
+
+			var totalBlocks = this.height * this.width,
+				activeBlocks = $("[data-x][data-y]").length,
+				blocksToBeCreated = totalBlocks - activeBlocks,
+				domFragment = $(document.createDocumentFragment()),
 				blocks = [];
-			while(total--) {
-				var block = new Block(this.blockTypes[Math.floor(Math.random() * this.blockTypes.length)], Math.random() * 10 > (10 - (this.numberOfBlockTypes / 3)));
-				this.element.append(block.element);
-				blocks.push(block);
+
+			while(blocksToBeCreated--) {
+				var tmpBlock = new Block(this.blockTypes[Math.floor(Math.random() * this.blockTypes.length)], Math.random() * 10 > (10 - (this.numberOfBlockTypes / 3)));
+				domFragment.append(tmpBlock.element);
+				blocks.push(tmpBlock);
 			}
 
+
+			this.element.append(domFragment);
+
+
+			setTimeout(function (){
+				this.placeUnplacedBlock(blocks);
+				delete blocks;
+			}.bind(this), 300);
+		}
+
+		Grid.prototype.placeUnplacedBlock = function(blocks){
 
 			var y = this.height;
 			while(y--) {
 				var x = this.width;
 				while(x--) {
-					var block = blocks.shift();
-
-					$(block.element).attr("data-x", x);
-					$(block.element).attr("data-y", y);
-				}
-			}
-
-			// this.render();
-		}
-
-		Grid.prototype.fillEmptyBlocks = function fillEmptyBlocks(){
-
-			var y = this.height;
-
-			while(y--) {
-				var x = this.width;
-				while(x--){
 					var block = this.getBlock(x, y);
 					if(block === null) {
-						block = new Block(this.blockTypes[Math.floor(Math.random() * this.blockTypes.length)], Math.random() * 10 > (10 - (this.numberOfBlockTypes / 3)));
+						block = blocks.shift();
+
 						block.setCoords(x, y);
-						this.element.append(block.element);
 					}
 				}
 			}
 
-			console.log("done")
 		}
 
 		Grid.prototype.getBlock = function getBlock(x, y) {

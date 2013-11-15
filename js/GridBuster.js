@@ -52,12 +52,14 @@ var GridBuster = (function (){
 			gridContainer: $("<div>"),
 			score: $("<div class='game-score'>"),
 			nextLevel: $("<button>Next Level</button>"),
+			fillGrid: $("<button>Fill Grid</button>"),
 			restart: $("<button>Restart</button>")
 		};
 
 		this.element.append(this.elements.score);
 		this.element.append(this.elements.restart);
 		this.element.append(this.elements.nextLevel);
+		this.element.append(this.elements.fillGrid);
 		this.element.append(this.elements.gridContainer);
 
 
@@ -81,6 +83,10 @@ var GridBuster = (function (){
 			this.resetGame();
 		}.bind(this));
 
+		this.elements.fillGrid.click(function (){
+			this.grid.fillEmptyBlocks();
+		}.bind(this));
+
 		this.elements.nextLevel.click(GridBuster.prototype.nextLevel.bind(this));
 
 		this.resetGame();
@@ -98,6 +104,7 @@ var GridBuster = (function (){
 
 	GridBuster.prototype.resetGame = function resetGame(){
 		this.score = 0;
+		this.level = 1;
 		this.grid.setup();
 		this.updateUI();
 	}

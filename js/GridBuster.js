@@ -548,7 +548,7 @@ var GridBuster = (function() {
 	var Selection = GridBuster.Selection = (function() {
 
 		/**
-		 * @returns {string}
+		 * @return {string}
 		 * @private
 		 */
 		function _getKey() {
@@ -565,8 +565,17 @@ var GridBuster = (function() {
 
 			this.checked = [];
 			this.added = [];
+
+			/**
+			 * gridInstance
+			 * @type {Grid}
+			 */
 			this.gridInstance = gridInstance;
 
+			/**
+			 *
+			 * @type {Block}
+			 */
 			this.block = block;
 			this.type = block.getType();
 
@@ -615,8 +624,8 @@ var GridBuster = (function() {
 
 		/**
 		 * getSelection for a block
-		 * @param block
-		 * @returns {Array}
+		 * @param {Block} block block to get selection
+		 * @return {Array} array of blocks to be selected
 		 */
 		Selection.prototype.getSelection = function getSelection(block) {
 
@@ -696,18 +705,24 @@ var GridBuster = (function() {
 
 			/**
 			 * type of block
+			 * @name type
+			 * @memberof Block#
 			 * @type {string}
 			 */
 			this.type = type;
 
 			/**
 			 * Is this a special block
+			 * @name special
+			 * @memberof Block#
 			 * @type {boolean}
 			 */
 			this.special = special;
 
 			/**
 			 * reference to the actual element in the page
+			 * @name element
+			 * @memberof Block#
 			 * @type {*|jQuery|HTMLElement}
 			 */
 			this.element = $("<div class='block' data-type='" +
@@ -725,7 +740,7 @@ var GridBuster = (function() {
 
 		/**
 		 * @method Block#setType
-		 * @return {string}
+		 * @param {string} type Block Type
 		 */
 		Block.prototype.setType = function setType(type) {
 			this.type = type;
@@ -733,7 +748,7 @@ var GridBuster = (function() {
 
 		/**
 		 * @method Block#isSpecial
-		 * @return {string}
+		 * @return {boolean}
 		 */
 		Block.prototype.isSpecial = function isSpecial() {
 			return this.special === true;

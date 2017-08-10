@@ -79,8 +79,8 @@ var GridBuster = (function() {
 		this.elements.nextLevel.click(GridBuster.prototype.nextLevel.bind(this));
 
 		this.soundMan = new SoundManager({
-			abduct: '/sound/abduct.mp3',
-			abduct2: '/sound/abduct2.mp3'
+			abduct: './sound/abduct.mp3',
+			abduct2: './sound/abduct2.mp3'
 		});
 
 		this.resetGame();

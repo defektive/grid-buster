@@ -83,7 +83,6 @@ var GridBuster = (function() {
 			abduct2: './sound/abduct2.mp3'
 		});
 
-		console.log('hello');
 		this.resetGame();
 	}
 

@@ -10,7 +10,7 @@ var GridBuster = (function() {
 	 * @const BLOCK_TYPES
 	 * @type {Array}
 	 */
-	var BLOCK_TYPES = GridBuster.BLOCK_TYPES = ['red', 'blue', 'green', 'pink', 'orange', 'purple', 'yellow'];
+	var BLOCK_TYPES = GridBuster.BLOCK_TYPES = ['red', 'blue', 'green', 'pink', 'orange', 'purple', 'yellow', 'teal', 'black'];
 
 	/**
 	 * @const LEVEL_OFFSET

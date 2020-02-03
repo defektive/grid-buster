@@ -15,13 +15,13 @@
 (function (){
 	var container = $("#grid-buster-demo"),
 		win = $(window),
-		width = container.width(),
+		width = win.width(),
 		height = win.height(),
 		tmpSize = Math.floor(width / 18),
 		blockSize = tmpSize < 32 ? 32 : tmpSize,
 		blocksWide = Math.floor(width / blockSize); // -100 for top bar
 
-	blockSize = width/blocksWide;
+	blockSize = Math.round(width/blocksWide);
 	let blocksHigh = Math.floor((height - 60) / blockSize)
 
 	new GridBuster({

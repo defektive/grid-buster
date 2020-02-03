@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -14,15 +13,16 @@
 
 <script type="text/javascript">
 (function (){
-
 	var container = $("#grid-buster-demo"),
 		win = $(window),
 		width = container.width(),
 		height = win.height(),
 		tmpSize = Math.floor(width / 18),
 		blockSize = tmpSize < 32 ? 32 : tmpSize,
-		blocksWide = Math.floor(width / blockSize),
-		blocksHigh = Math.floor((height - 60) / blockSize); // -100 for top bar
+		blocksWide = Math.floor(width / blockSize); // -100 for top bar
+
+	blockSize = width/blocksWide;
+	let blocksHigh = Math.floor((height - 60) / blockSize)
 
 	new GridBuster({
 		element: container,
@@ -31,10 +31,7 @@
 		blockSize: blockSize,
 		startLevel: 1
 	});
-
 })();
-
 </script>
-
 </body>
 </html>

@@ -1,6 +1,10 @@
 
+html, body {
+	margin: 0;
+}
+
 #grid-buster-demo {
-	margin: 90px auto;
+	margin: 90px auto 0;
 }
 
 .grid-buster * {
@@ -13,7 +17,6 @@
 }
 
 .grid-buster .game-score {
-
 	position: relative;
 	top: -77px;
 	left: 88px;
@@ -69,10 +72,11 @@
 
 .grid-buster .ufo-ship {
 	position: relative;
-	width: 250px;
 	z-index: 20;
-	height: 188px;
 	background: url(flying-saucer3.png);
+	background-size: contain;
+	height: 100%;
+	width: 100%;
 }
 
 .grid-buster .ufo-ray {
@@ -86,9 +90,7 @@
 	z-index: 19;
 	-webkit-transform: perspective(30px) rotateX(45deg);
 	-webkit-transform-origin: 50% 0%;
-
 	transition: all 250ms ease-out;
-
 	background: linear-gradient(to bottom, rgba(13,201,0,1) 0%,rgba(3,154,0,0) 8%,rgba(0,138,0,0) 30%);
 }
 
@@ -106,6 +108,31 @@
 
 .grid-buster .ufo.right{
 	-webkit-transform: rotate(-10deg);
+}
+
+
+@media only screen and (max-width: 420px) {
+
+	#grid-buster-demo {
+		margin: 60px auto 0;
+	}
+
+	.grid-buster .ufo {
+		top: -25px;
+		width: 125px;
+		height: 94px;
+		margin-left: -62px;
+	}
+
+	.grid-buster .ufo.hover {
+		top: -35px;
+	}
+
+	.grid-buster .game-score {
+		top: -38px;
+		left: 31px;
+		font-size: 8px;
+	}
 }
 
 

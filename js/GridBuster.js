@@ -33,10 +33,10 @@ var GridBuster = (function() {
 		this.elements = {
 			gridContainer: $('<div>'),
 			score: $("<div class='game-score'>0</div>"),
-			nextLevel: $('<button>Next Level</button>'),
-			fillGrid: $('<button>Fill Grid</button>'),
 			ufo: $("<div class='ufo'><div class='ufo-ship'></div></div>"),
 			ufoRay: $("<div class='ufo-ray'></div>"),
+			nextLevel: $('<button>Next Level</button>'),
+			fillGrid: $('<button>Fill Grid</button>'),
 			restart: $('<button>Restart</button>')
 		};
 
@@ -45,9 +45,12 @@ var GridBuster = (function() {
 		this.element.append(this.elements.ufo);
 		this.elements.ufo.append(this.elements.score);
 		this.elements.ufo.append(this.elements.ufoRay);
-		this.element.append(this.elements.restart);
-		this.element.append(this.elements.nextLevel);
-		this.element.append(this.elements.fillGrid);
+
+		let buttonContainer = $('<div>')
+		buttonContainer.append(this.elements.restart);
+	  buttonContainer.append(this.elements.nextLevel);
+		buttonContainer.append(this.elements.fillGrid);
+		this.element.append(buttonContainer);
 		this.element.append(this.elements.gridContainer);
 
 		this.element.delegate('.block', 'click', _handleBlockClick.bind(this));
